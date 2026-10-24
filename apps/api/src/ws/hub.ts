@@ -112,7 +112,14 @@ export class Hub {
         (client.claims.role === 'wallboard' &&
           client.claims.eventId === eventId);
       if (matches) {
-        void this.sendSnapshot(client).catch(() => undefined);
+        void this.sendSnapshot(client).catch((err) => {
+          console.error(
+            'snapshot broadcast failed',
+            client.claims?.role,
+            client.eventId ?? client.claims?.eventId,
+            err instanceof Error ? err.message : err,
+          );
+        });
       }
     }
   }

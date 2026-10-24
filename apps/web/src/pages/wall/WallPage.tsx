@@ -8,7 +8,9 @@ import { MarkingRobot } from '../../components/MarkingRobot';
 import { FinalConfetti } from '../../components/FinalConfetti';
 import { TeamAvatar } from '../../components/TeamAvatar';
 import { api, clearToken, setToken, getToken, tokenEventId } from '../../lib/api';
+import { playSystem } from '../../lib/sfx';
 import { useLiveTimer } from '../../hooks/useLiveTimer';
+import { useRoomSfx } from '../../hooks/useRoomSfx';
 import { useSnapshot } from '../../hooks/useSnapshot';
 
 export function WallPage() {
@@ -112,8 +114,77 @@ export function WallPage() {
     remainingMs,
     durationMs,
     urgent,
+    critical,
     paused: timerPaused,
   } = useLiveTimer(wall?.timer);
+
+  useRoomSfx({
+    state: wall?.state,
+    critical,
+    timerPaused,
+  });
+
+  const wagerQuestion = useRef<number | null>(null);
+  const wagerCount = useRef(0);
+  const lastRevealKey = useRef<string | null>(null);
+  const standingsPlayed = useRef(false);
+
+  useEffect(() => {
+    if (wall?.state !== 'answer_open') {
+      wagerQuestion.current = null;
+      wagerCount.current = 0;
+      return;
+    }
+    const q = wall.questionNumber ?? 0;
+    const list = wall.activeWagers ?? [];
+    if (wagerQuestion.current !== q) {
+      // New question (or first snapshot): seed without replaying existing wagers
+      wagerQuestion.current = q;
+      wagerCount.current = list.length;
+      return;
+    }
+    if (list.length > wagerCount.current) {
+      const added = list.length - wagerCount.current;
+      for (let i = 0; i < added; i++) {
+        playSystem('wager', { volume: 0.85 });
+      }
+      wagerCount.current = list.length;
+    }
+  }, [wall?.state, wall?.questionNumber, wall?.activeWagers]);
+
+  useEffect(() => {
+    const reveal = wall?.revealAnswer;
+    if (!reveal || wall?.state !== 'section_reveal') {
+      lastRevealKey.current = null;
+      return;
+    }
+    const key = `${reveal.index}:${reveal.wording}`;
+    if (lastRevealKey.current === key) return;
+    lastRevealKey.current = key;
+    playSystem('reveal_answer');
+    if (reveal.speedWinner) {
+      window.setTimeout(() => playSystem('speed_winner'), 450);
+    }
+  }, [
+    wall?.state,
+    wall?.revealAnswer?.index,
+    wall?.revealAnswer?.wording,
+    wall?.revealAnswer?.speedWinner,
+  ]);
+
+  useEffect(() => {
+    const showingStandings =
+      (wall?.state === 'section_reveal' || wall?.state === 'finished') &&
+      Array.isArray(wall?.standings) &&
+      wall.standings.length > 0;
+    if (!showingStandings) {
+      standingsPlayed.current = false;
+      return;
+    }
+    if (standingsPlayed.current) return;
+    standingsPlayed.current = true;
+    playSystem('standings');
+  }, [wall?.state, wall?.standings]);
 
   if (!ready) {
     return (

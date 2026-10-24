@@ -1,6 +1,7 @@
 import {
   normalizeAnswerSpec,
   parseAvatarId,
+  parseBuzzerId,
   type HostSnapshot,
   type TeamPlaySnapshot,
   type WallboardSnapshot,
@@ -336,6 +337,12 @@ export async function buildWallboardSnapshot(
           id: o.id,
           label: o.label,
         }));
+      } else if (answerSpec.format === 'ordered_list') {
+        // Labels only — never correctOrder (answer key)
+        base.choices = answerSpec.data.items.map((i) => ({
+          id: i.id,
+          label: i.label,
+        }));
       }
       if (snap.content.mediaImageId) {
         base.mediaImageUrl = `/media/${snap.content.mediaImageId}`;
@@ -349,6 +356,24 @@ export async function buildWallboardSnapshot(
       base.answerClosed = ev.state === 'answer_closed';
       void countRows;
     }
+  }
+
+  if (ev.state === 'answer_open' && ev.current_question_id) {
+    const { rows: liveWagers } = await query<{
+      name: string;
+      avatar_id: string;
+    }>(
+      `SELECT t.name, t.avatar_id
+       FROM wagers w
+       JOIN teams t ON t.id = w.team_id
+       WHERE w.event_id = $1 AND w.question_id = $2
+       ORDER BY w.created_at ASC`,
+      [eventId, ev.current_question_id],
+    );
+    base.activeWagers = liveWagers.map((w) => ({
+      teamName: w.name,
+      avatarId: parseAvatarId(w.avatar_id),
+    }));
   }
 
   if (ev.state === 'section_reveal' || ev.state === 'finished') {
@@ -511,6 +536,7 @@ export async function buildTeamSnapshot(
     id: string;
     name: string;
     avatar_id: string;
+    buzzer_id: string;
     wagers_remaining: number;
     bonus_section_id: string | null;
     active_device_id: string | null;
@@ -671,6 +697,7 @@ export async function buildTeamSnapshot(
     teamId: team.id,
     teamName: team.name,
     avatarId: parseAvatarId(team.avatar_id),
+    buzzerId: parseBuzzerId(team.buzzer_id),
     state: ev.state,
     sectionTitle,
     sectionTheme,

@@ -25,6 +25,7 @@ export function useLiveTimer(timer?: TimerSnapshot | null) {
       durationMs: null as number | null,
       paused: false,
       urgent: false,
+      critical: false,
     };
   }
 
@@ -43,5 +44,7 @@ export function useLiveTimer(timer?: TimerSnapshot | null) {
         : null,
     paused,
     urgent: remainingMs > 0 && remainingMs <= 10_000,
+    /** Last 5 seconds — urgency SFX threshold */
+    critical: remainingMs > 0 && remainingMs <= 5_000,
   };
 }

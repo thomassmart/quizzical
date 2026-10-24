@@ -4,3 +4,4 @@ export * from './scoring/score.js';
 export * from './ws/messages.js';
 export * from './answers/normalize.js';
 export * from './avatars.js';
+export * from './buzzers.js';

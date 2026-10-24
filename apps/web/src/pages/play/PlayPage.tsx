@@ -25,8 +25,10 @@ import {
   setToken,
   tokenEventId,
 } from '../../lib/api';
+import { playBuzzer } from '../../lib/sfx';
 import { randomUUID } from '../../lib/uuid';
 import { useLiveTimer } from '../../hooks/useLiveTimer';
+import { useRoomSfx } from '../../hooks/useRoomSfx';
 import { useSnapshot } from '../../hooks/useSnapshot';
 
 function resetJoinFields() {
@@ -242,6 +244,7 @@ export function PlayPage() {
           idempotencyKey: randomUUID(),
         }),
       });
+      playBuzzer(play?.buzzerId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Submit failed');
     }
@@ -265,8 +268,15 @@ export function PlayPage() {
     remainingMs,
     durationMs,
     urgent,
+    critical,
     paused: timerPaused,
   } = useLiveTimer(play?.timer);
+
+  useRoomSfx({
+    state: play?.state,
+    critical,
+    timerPaused,
+  });
 
   const showGetReady =
     play?.state === 'section_active' || play?.state === 'answer_closed';

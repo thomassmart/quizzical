@@ -1,6 +1,10 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { AVATAR_IDS, parseAvatarId } from '@quizzical/shared';
+import {
+  AVATAR_IDS,
+  parseAvatarId,
+  pickBuzzerId,
+} from '@quizzical/shared';
 import { verifyHostPassword, hashPin, verifyPin } from '../auth/password.js';
 import { signToken } from '../auth/tokens.js';
 import { query } from '../db/client.js';
@@ -30,6 +34,14 @@ async function isAvatarAvailable(
         [eventId, avatarId],
       );
   return rows.length === 0;
+}
+
+async function allocateBuzzerId(eventId: string): Promise<string> {
+  const { rows } = await query<{ buzzer_id: string }>(
+    `SELECT buzzer_id FROM teams WHERE event_id = $1`,
+    [eventId],
+  );
+  return pickBuzzerId(rows.map((r) => r.buzzer_id));
 }
 
 export async function authRoutes(app: FastifyInstance) {
@@ -123,10 +135,11 @@ export async function authRoutes(app: FastifyInstance) {
       if (!(await isAvatarAvailable(event.id, avatarId))) {
         return reply.code(409).send({ error: 'Avatar already taken' });
       }
+      const buzzerId = await allocateBuzzerId(event.id);
       try {
         const { rows } = await query<{ id: string }>(
-          `INSERT INTO teams (event_id, name, pin_hash, pin, bonus_section_id, active_device_id, avatar_id, member_names)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+          `INSERT INTO teams (event_id, name, pin_hash, pin, bonus_section_id, active_device_id, avatar_id, member_names, buzzer_id)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
           [
             event.id,
             body.teamName.trim(),
@@ -136,6 +149,7 @@ export async function authRoutes(app: FastifyInstance) {
             deviceId,
             avatarId,
             members,
+            buzzerId,
           ],
         );
         teamId = rows[0]!.id;

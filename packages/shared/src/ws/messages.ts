@@ -97,6 +97,11 @@ export interface WallboardSnapshot {
     avatarId: string;
   }[] | null;
   joinUrl?: string | null;
+  /** Teams that have wagered on the current open question (live) */
+  activeWagers?: {
+    teamName: string;
+    avatarId: string;
+  }[] | null;
 }
 
 export interface TeamPlaySnapshot {
@@ -105,6 +110,8 @@ export interface TeamPlaySnapshot {
   teamId: string;
   teamName: string;
   avatarId: string;
+  /** Funny submit buzzer assigned at join */
+  buzzerId: string;
   state: z.infer<typeof EventStateSchema>;
   sectionTitle?: string | null;
   sectionTheme?: string | null;
