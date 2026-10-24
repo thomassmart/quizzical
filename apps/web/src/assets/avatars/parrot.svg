@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="parrot">
+  <circle cx="48" cy="48" r="46" fill="#ECFDF5"/>
+  
+      <path d="M42 38 Q30 8 58 16 Q50 28 48 40Z" fill="#F87171"/>
+      <path d="M50 36 Q62 6 74 24 Q60 28 56 40Z" fill="#FBBF24"/>
+  <circle cx="48" cy="52" r="28" fill="#34D399"/>
+  
+  
+    <circle cx="38" cy="50" r="4.5" fill="#064E3B"/>
+    <circle cx="58" cy="50" r="4.5" fill="#064E3B"/>
+    <circle cx="39.5" cy="48.5" r="1.4" fill="#fff" opacity="0.9"/>
+    <circle cx="59.5" cy="48.5" r="1.4" fill="#fff" opacity="0.9"/>
+  <path d="M42 54 Q48 74 54 54 Q48 58 42 54Z" fill="#FBBF24"/>
+  <path d="M40 64 Q48 69 56 64" fill="none" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" opacity="0.75"/>
+</svg>

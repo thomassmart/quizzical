@@ -1,0 +1,2 @@
+ALTER TABLE sections
+  ADD COLUMN IF NOT EXISTS auto_open_answers BOOLEAN NOT NULL DEFAULT false;

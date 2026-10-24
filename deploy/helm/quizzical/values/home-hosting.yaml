@@ -1,0 +1,53 @@
+# Deploy on home-hosting.mts.id.au from GitHub Container Registry images.
+#
+# After the Publish containers workflow runs (push to main / tag / manual):
+#   ghcr.io/<github-owner>/quizzical-api:latest
+#   ghcr.io/<github-owner>/quizzical-web:latest
+#
+# Replace OWNER below (or --set image.api=... image.web=...).
+# For private packages, create a pull secret and set imagePullSecrets.
+
+image:
+  api: ghcr.io/OWNER/quizzical-api:latest
+  web: ghcr.io/OWNER/quizzical-web:latest
+  postgres: docker.io/library/postgres:16-alpine
+  pullPolicy: Always
+
+# imagePullSecrets:
+#   - name: ghcr-pull
+imagePullSecrets: []
+
+postgres:
+  storage: 5Gi
+
+media:
+  storage: 5Gi
+
+replicaCount: 1
+
+route:
+  host: quizzical.apps.home-hosting.mts.id.au
+  tlsTermination: edge
+
+resources:
+  api:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  web:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  postgres:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi

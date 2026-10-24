@@ -1,0 +1,2 @@
+ALTER TABLE teams
+  ADD COLUMN IF NOT EXISTS avatar_id TEXT NOT NULL DEFAULT 'red-panda';

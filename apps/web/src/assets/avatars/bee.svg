@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="bee">
+  <circle cx="48" cy="48" r="46" fill="#FEFCE8"/>
+  
+      <ellipse cx="28" cy="28" rx="14" ry="8" fill="#fff" stroke="#1C1917" stroke-width="2" transform="rotate(-30 28 28)" opacity="0.95"/>
+      <ellipse cx="68" cy="28" rx="14" ry="8" fill="#fff" stroke="#1C1917" stroke-width="2" transform="rotate(30 68 28)" opacity="0.95"/>
+  <circle cx="48" cy="52" r="28" fill="#FACC15"/>
+  
+      <path d="M28 48 H68" stroke="#1C1917" stroke-width="5"/>
+      <path d="M28 58 H68" stroke="#1C1917" stroke-width="5"/>
+      <circle cx="22" cy="42" r="3" fill="#1C1917"/>
+      <circle cx="74" cy="42" r="3" fill="#1C1917"/>
+  
+    <circle cx="38" cy="50" r="4.5" fill="#1C1917"/>
+    <circle cx="58" cy="50" r="4.5" fill="#1C1917"/>
+    <circle cx="39.5" cy="48.5" r="1.4" fill="#fff" opacity="0.9"/>
+    <circle cx="59.5" cy="48.5" r="1.4" fill="#fff" opacity="0.9"/>
+  
+  <path d="M40 66 Q48 72 56 66" fill="none" stroke="#78350F" stroke-width="2" stroke-linecap="round"/>
+</svg>

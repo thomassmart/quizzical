@@ -1,0 +1,26 @@
+{
+  "name": "quizzical",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @quizzical/shared && npm run build -w @quizzical/api && npm run build -w @quizzical/web",
+    "dev": "concurrently -n api,web -c teal,cyan \"npm run dev -w @quizzical/api\" \"npm run dev -w @quizzical/web\"",
+    "dev:api": "npm run dev -w @quizzical/api",
+    "dev:web": "npm run dev -w @quizzical/web",
+    "test": "npm run test -w @quizzical/shared && npm run test -w @quizzical/api",
+    "db:migrate": "npm run db:migrate -w @quizzical/api",
+    "db:seed": "npm run db:seed -w @quizzical/api",
+    "lint": "npm run lint -w @quizzical/shared && npm run lint -w @quizzical/api && npm run lint -w @quizzical/web"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.8.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

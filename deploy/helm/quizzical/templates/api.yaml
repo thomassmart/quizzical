@@ -1,0 +1,136 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "quizzical.name" . }}-migrate-{{ .Release.Revision }}
+  labels:
+    {{- include "quizzical.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: {{ include "quizzical.name" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # anyuid SCC (needed for fixed UIDs/fsGroup) has no seccompProfiles; omit seccompProfile.
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 1001
+      containers:
+        - name: migrate
+          image: {{ .Values.image.api }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
+            runAsUser: 1001
+          envFrom:
+            - secretRef:
+                name: {{ include "quizzical.name" . }}-secrets
+          workingDir: /app/apps/api
+          command:
+            - /bin/sh
+            - -c
+            - |
+              for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30; do
+                if node -e "const {Client}=require('pg'); const c=new Client({connectionString:process.env.DATABASE_URL}); c.connect().then(()=>c.end()).catch(e=>{console.error(e.message); process.exit(1)})"; then
+                  break
+                fi
+                echo "waiting for postgres ($i)..."
+                sleep 2
+              done
+              exec node dist/db/migrate.js
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "quizzical.name" . }}-api
+  labels:
+    {{- include "quizzical.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "quizzical.name" . }}
+      app.kubernetes.io/component: api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "quizzical.name" . }}
+        app.kubernetes.io/component: api
+    spec:
+      serviceAccountName: {{ include "quizzical.name" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 1001
+      containers:
+        - name: api
+          image: {{ .Values.image.api }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
+            runAsUser: 1001
+          ports:
+            - containerPort: 4000
+          envFrom:
+            - secretRef:
+                name: {{ include "quizzical.name" . }}-secrets
+          env:
+            - name: PORT
+              value: "4000"
+            - name: MEDIA_DIR
+              value: /data/media
+            - name: PUBLIC_BASE_URL
+              value: https://{{ required "route.host is required for QR/join links" .Values.route.host }}
+            - name: WEB_ORIGIN
+              value: https://{{ required "route.host is required for QR/join links" .Values.route.host }}
+          volumeMounts:
+            - name: media
+              mountPath: /data/media
+          resources:
+            {{- toYaml .Values.resources.api | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 4000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 4000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+      volumes:
+        - name: media
+          persistentVolumeClaim:
+            claimName: {{ include "quizzical.name" . }}-media
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "quizzical.name" . }}-api
+  labels:
+    {{- include "quizzical.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 4000
+      targetPort: 4000
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "quizzical.name" . }}
+    app.kubernetes.io/component: api

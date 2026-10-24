@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="penguin">
+  <circle cx="48" cy="48" r="46" fill="#F0F9FF"/>
+  
+      <ellipse cx="24" cy="48" rx="8" ry="14" fill="#0F172A"/>
+      <ellipse cx="72" cy="48" rx="8" ry="14" fill="#0F172A"/>
+  <circle cx="48" cy="52" r="28" fill="#F8FAFC"/>
+  
+      <ellipse cx="48" cy="54" rx="26" ry="28" fill="#0F172A"/>
+      <ellipse cx="48" cy="56" rx="18" ry="22" fill="#F8FAFC"/>
+  
+    <circle cx="38" cy="50" r="4.5" fill="#0F172A"/>
+    <circle cx="58" cy="50" r="4.5" fill="#0F172A"/>
+    <circle cx="39.5" cy="48.5" r="1.4" fill="#fff" opacity="0.9"/>
+    <circle cx="59.5" cy="48.5" r="1.4" fill="#fff" opacity="0.9"/>
+  <path d="M42 56 L48 66 L54 56Z" fill="#F59E0B"/>
+  <path d="M40 64 Q48 69 56 64" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" opacity="0.75"/>
+</svg>

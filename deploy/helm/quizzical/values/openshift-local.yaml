@@ -1,0 +1,33 @@
+# OpenShift Local (CRC) — lighter resources
+resources:
+  api:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 768Mi
+  web:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  postgres:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+postgres:
+  storage: 2Gi
+
+media:
+  storage: 2Gi
+
+route:
+  # e.g. quizzical-quizzical.apps-crc.testing
+  host: ""

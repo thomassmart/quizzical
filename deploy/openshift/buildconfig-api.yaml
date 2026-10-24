@@ -1,0 +1,27 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: quizzical-api
+  labels:
+    app.kubernetes.io/name: quizzical
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: quizzical-api
+  labels:
+    app.kubernetes.io/name: quizzical
+spec:
+  source:
+    type: Binary
+    binary: {}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: apps/api/Containerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: quizzical-api:latest
+  successfulBuildsHistoryLimit: 2
+  failedBuildsHistoryLimit: 2

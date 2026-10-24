@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "quizzical.name" . }}-web
+  labels:
+    {{- include "quizzical.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "quizzical.name" . }}
+      app.kubernetes.io/component: web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "quizzical.name" . }}
+        app.kubernetes.io/component: web
+    spec:
+      serviceAccountName: {{ include "quizzical.name" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: web
+          image: {{ .Values.image.web }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+          resources:
+            {{- toYaml .Values.resources.web | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: {{ include "quizzical.name" . }}-nginx
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "quizzical.name" . }}-web
+  labels:
+    {{- include "quizzical.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "quizzical.name" . }}
+    app.kubernetes.io/component: web
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "quizzical.name" . }}
+  labels:
+    {{- include "quizzical.labels" . | nindent 4 }}
+  annotations:
+    haproxy.router.openshift.io/timeout: 60m
+spec:
+  {{- if .Values.route.host }}
+  host: {{ .Values.route.host }}
+  {{- end }}
+  to:
+    kind: Service
+    name: {{ include "quizzical.name" . }}-web
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: {{ .Values.route.tlsTermination }}
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

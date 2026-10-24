@@ -1,0 +1,2 @@
+ALTER TABLE sections
+  ADD COLUMN IF NOT EXISTS topic_images JSONB NOT NULL DEFAULT '[]'::jsonb;

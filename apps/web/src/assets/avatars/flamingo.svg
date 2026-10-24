@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="flamingo">
+  <circle cx="48" cy="48" r="46" fill="#FFF1F2"/>
+  
+  <circle cx="48" cy="52" r="28" fill="#FB7185"/>
+  
+      <path d="M48 78 Q40 88 48 92 Q56 88 48 78" fill="#BE123C"/>
+      <circle cx="48" cy="38" r="8" fill="#FDA4AF"/>
+  
+    <circle cx="38" cy="50" r="4.5" fill="#1C1917"/>
+    <circle cx="58" cy="50" r="4.5" fill="#1C1917"/>
+    <circle cx="39.5" cy="48.5" r="1.4" fill="#fff" opacity="0.9"/>
+    <circle cx="59.5" cy="48.5" r="1.4" fill="#fff" opacity="0.9"/>
+  <path d="M42 58 Q48 72 54 58" fill="#FBBF24"/>
+  <path d="M40 64 Q48 69 56 64" fill="none" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" opacity="0.75"/>
+</svg>

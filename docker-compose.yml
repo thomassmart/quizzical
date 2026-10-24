@@ -1,0 +1,69 @@
+services:
+  postgres:
+    image: docker.io/library/postgres:16-alpine
+    environment:
+      POSTGRES_USER: quizzical
+      POSTGRES_PASSWORD: quizzical
+      POSTGRES_DB: quizzical
+    ports:
+      - '5432:5432'
+    volumes:
+      - quizzical_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U quizzical']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Containerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgres://quizzical:quizzical@postgres:5432/quizzical
+      HOST_PASSWORD: ${HOST_PASSWORD:-changeme}
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-in-production}
+      PORT: '4000'
+      MEDIA_DIR: /data/media
+      PUBLIC_BASE_URL: http://localhost:9080
+      WEB_ORIGIN: http://localhost:9080
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://maas-rhdp.apps.maas.redhatworkshops.io/v1}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_CHAT_MODEL: ${LLM_CHAT_MODEL:-gpt-oss-20b}
+      LLM_EMBED_MODEL: ${LLM_EMBED_MODEL:-nomic-embed-text-v1-5}
+      LLM_FALLBACK_CHAT_MODEL: ${LLM_FALLBACK_CHAT_MODEL:-granite-3-2-8b-instruct}
+    volumes:
+      - quizzical_media:/data/media
+    ports:
+      - '4000:4000'
+
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Containerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://quizzical:quizzical@postgres:5432/quizzical
+    working_dir: /app/apps/api
+    command: ['node', 'dist/db/migrate.js']
+    restart: 'no'
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Containerfile
+    depends_on:
+      - api
+    ports:
+      - '9080:8080'
+
+volumes:
+  quizzical_pg:
+  quizzical_media:

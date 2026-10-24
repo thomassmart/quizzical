@@ -1,0 +1,72 @@
+nameOverride: quizzical
+
+image:
+  api: quizzical-api:latest
+  web: quizzical-web:latest
+  # Official Postgres (works on OpenShift Local with arbitrary UID via fsGroup).
+  # Swap to registry.redhat.io/rhel9/postgresql-16 if preferred.
+  postgres: docker.io/library/postgres:16-alpine
+  pullPolicy: IfNotPresent
+
+# For private GHCR pulls, create a secret and list it here:
+#   oc create secret docker-registry ghcr-pull \
+#     --docker-server=ghcr.io \
+#     --docker-username=USER \
+#     --docker-password=GITHUB_PAT \
+#     --docker-email=you@example.com
+# imagePullSecrets:
+#   - name: ghcr-pull
+imagePullSecrets: []
+
+replicaCount: 1
+
+hostPassword: changeme
+jwtSecret: change-me-jwt-secret
+# Optional Streamable HTTP MCP bearer token (empty = MCP disabled)
+mcpToken: ""
+
+llm:
+  baseUrl: "https://maas-rhdp.apps.maas.redhatworkshops.io/v1"
+  apiKey: ""
+  chatModel: gpt-oss-20b
+  embedModel: nomic-embed-text-v1-5
+  fallbackChatModel: granite-3-2-8b-instruct
+
+postgres:
+  user: quizzical
+  password: quizzical
+  database: quizzical
+  storage: 5Gi
+
+media:
+  storage: 5Gi
+
+resources:
+  api:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  web:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  postgres:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+route:
+  host: ""
+  tlsTermination: edge
+
+serviceAccount:
+  create: true
