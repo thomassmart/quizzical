@@ -116,7 +116,7 @@ export class Hub {
           console.error(
             'snapshot broadcast failed',
             client.claims?.role,
-            client.eventId ?? client.claims?.eventId,
+            client.eventId,
             err instanceof Error ? err.message : err,
           );
         });
