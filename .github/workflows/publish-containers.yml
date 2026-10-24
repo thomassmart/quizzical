@@ -63,14 +63,15 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
 
-      # Public repo images — OpenShift can pull without a GHCR pull secret.
-      # Visibility change is one-way (public → private is not allowed).
+      # Best-effort: GITHUB_TOKEN often cannot change visibility. Prefer a
+      # one-time manual flip in package settings, or a ghcr-pull secret.
       - name: Make package public
         if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
+          set -u
           pkg="${{ matrix.image }}"
           echo "Setting ghcr.io/${{ github.repository_owner }}/${pkg} visibility=public"
           gh api --method PATCH \
