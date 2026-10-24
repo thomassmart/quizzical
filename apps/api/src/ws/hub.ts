@@ -63,15 +63,25 @@ export class Hub {
   }
 
   private async authenticate(client: Client, token: string) {
-    const claims = await verifyToken(token);
-    client.claims = claims;
-    if (claims.role === 'team' || claims.role === 'wallboard') {
-      client.eventId = claims.eventId;
+    try {
+      const claims = await verifyToken(token);
+      client.claims = claims;
+      if (claims.role === 'team' || claims.role === 'wallboard') {
+        client.eventId = claims.eventId;
+      }
+      if (claims.role === 'team') {
+        setTeamConnected(claims.eventId, claims.teamId, true);
+      }
+      await this.sendSnapshot(client);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Auth failed';
+      try {
+        client.socket.send(JSON.stringify({ type: 'error', message }));
+      } catch {
+        /* socket may already be closing */
+      }
+      client.socket.close();
     }
-    if (claims.role === 'team') {
-      setTeamConnected(claims.eventId, claims.teamId, true);
-    }
-    await this.sendSnapshot(client);
   }
 
   async sendSnapshot(client: Client) {
